@@ -1,0 +1,86 @@
+name: lstm
+base: ['config/ccpd_rec_test.yaml']
+arch:
+  algorithm: rec
+  backbone:
+    type: ResNet_FeatureExtractor
+    args:
+      input_channel: 3
+  neck:
+    type: BiLSTM
+    args:
+      mode: max_pool
+      hidden_size: 256
+  head:
+    type: CTC_Head
+    args:
+      output_size: auto
+converter:
+  type: CTCLabelConverter
+  args:
+    character: license_plate
+post_processing:
+  type: SegDetectorRepresenter
+  args:
+    thresh: 0.3
+    box_thresh: 0.7
+    max_candidates: 1000
+    unclip_ratio: 3.0 # from paper
+metric:
+  type: STRMeters
+loss:
+  type: CTCLoss
+optimizer:
+  type: Adadelta
+  args:
+    lr: 0.1
+    weight_decay: 0
+lr_scheduler:
+  type: WarmupPolyLR
+  args:
+    warmup_epoch: 0.0001
+trainer:
+  seed: 2
+  epochs: 200
+  log_iter: 100
+  show_images_iter: 500
+  resume_checkpoint: 'output/lstm_rec/checkpoint/model_latest.pth'
+  finetune_checkpoint: ''
+  output_dir: output
+  tensorboard: true
+dataset:
+  train:
+    dataset:
+      args:
+        data_path:
+          - /home/wjj/src/new_ccpd/CCPD2019/icdar_format/train.txt
+        img_mode: RGB
+    loader:
+      batch_size: 32
+      shuffle: true
+      pin_memory: true
+      num_workers: 8
+      collate_fn:
+        type: AlignCollate
+        args:
+          imgH: 32
+          imgW: 100
+          keep_ratio_with_pad: true
+  validate:
+    dataset:
+      args:
+        data_path:
+          - /home/wjj/src/new_ccpd/CCPD2019/icdar_format/test.txt
+        img_mode: RGB
+    loader:
+      batch_size: 32
+      shuffle: true
+      pin_memory: false
+      num_workers: 8
+      collate_fn:
+        type: AlignCollate
+        args:
+          imgH: 32
+          imgW: 100
+          keep_ratio_with_pad: true
+

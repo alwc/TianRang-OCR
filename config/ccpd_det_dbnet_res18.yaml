@@ -1,0 +1,83 @@
+name: DBNet_res18
+base: ['config/icdar2015.yaml']
+arch:
+  algorithm: det
+  backbone:
+    type: resnet18
+    args:
+      pretrained: true
+  neck:
+    type: FPN
+    args:
+      inner_channels: 256
+  head:
+    type: DBHead
+    args:
+      k: 50
+post_processing:
+  type: DBPostProcess
+  args:
+    thresh: 0.3
+    box_thresh: 0.7
+    max_candidates: 1000
+    unclip_ratio: 3.0
+metric:
+  type: QuadMetric
+  args:
+    is_output_polygon: false
+loss:
+  type: DBLoss
+  args:
+    alpha: 1
+    beta: 10
+    ohem_ratio: 3
+optimizer:
+  type: Adam
+  args:
+    lr: 0.001
+    weight_decay: 0
+    amsgrad: true
+lr_scheduler:
+  type: MultiStepLR
+  args:
+    milestones: [7, 9]
+trainer:
+  seed: 2
+  epochs: 10
+  log_iter: 100
+  show_images_iter: 500
+  resume_checkpoint: ''
+  finetune_checkpoint: ''
+  output_dir: output
+  tensorboard: true
+dataset:
+  train:
+    dataset:
+      args:
+        data_path:
+          - /home/wjj/src/new_ccpd/CCPD2019/icdar_format/train_test.txt
+        img_mode: RGB
+    loader:
+      batch_size: 16
+      shuffle: true
+      pin_memory: true
+      num_workers: 6
+      collate_fn: ''
+  validate:
+    dataset:
+      args:
+        data_path:
+          - /home/wjj/src/new_ccpd/CCPD2019/icdar_format/val.txt
+        pre_processes:
+          - type: ResizeShortSize
+            args:
+              short_size: 416
+              resize_text_polys: false
+        img_mode: RGB
+    loader:
+      batch_size: 1
+      shuffle: true
+      pin_memory: false
+      num_workers: 6
+      collate_fn:
+        type: ICDARCollectFN

@@ -1,0 +1,7 @@
+*.json
+a.py
+b.py
+c.py
+output/
+test/
+static/

@@ -1,0 +1,102 @@
+name: resnet34_tps_small_crpo1.1
+base: ['config/ccpd_aug_base.yaml']
+arch:
+  preprocess:
+    type: TPS
+    args:
+      F: 20
+      I_size: [32, 120]
+      I_r_size: [32, 120]
+      I_channel_num: 3
+      scale: 0.25
+  algorithm: rec
+  backbone:
+    type: resnet34
+    args:
+      pretrained: true
+  neck:
+    type: Squeeze
+    args:
+      mode: max_pool
+  head:
+    type: CTC_Head
+    args:
+      dropout_rate: 0
+converter:
+  type: CTCLabelConverter
+  args:
+    character: license_plate
+metric:
+  type: STRMeters
+loss:
+  type: CTCLoss
+optimizer:
+  type: Adadelta
+  args:
+    lr: 0.1
+lr_scheduler:
+  type: MultiStepLR
+  args:
+    milestones: [60, 90]
+trainer:
+  seed: 2
+  epochs: 100
+  log_iter: 100
+  show_images_iter: 500
+  resume_checkpoint: 'output/resnet34_tps_small_crpo1.1_rec/checkpoint/model_latest.pth'
+  finetune_checkpoint: ''
+  output_dir: output
+  tensorboard: true
+dataset:
+  train:
+    dataset:
+      args:
+        data_path:
+          - /home/wjj/src/new_ccpd/CCPD2019/icdar_format/train.txt
+        pre_processes: # 数据的预处理过程，包含augment和标签制作
+          - type: CropWordBox
+            args:
+              value: [1,1.1]
+          - type: IaaAugment # 使用imgaug进行变换
+            args:
+              # - {'type':Resize, 'args':{'size': {'height': 32, 'width': 'keep-aspect-ratio'}}}
+              - {'type':AddToHueAndSaturation,'args':{'value':[-50, 50]}}
+              - {'type':Affine, 'args':{'rotate':[-10,10]}}
+              - {'type':MultiplyBrightness, 'args':{'mul':[0.7, 1.3]}}
+        img_mode: RGB
+        filter_keys: [img_path,img_name,ignore_tags,shape] # 返回数据之前，从数据字典里删除的key
+        ignore_tags: ['*', '###']
+    loader:
+      batch_size: 32
+      shuffle: true
+      pin_memory: true
+      num_workers: 8
+      collate_fn:
+        type: AlignCollate
+        args:
+          imgH: 32
+          imgW: 120
+          keep_ratio_with_pad: false
+  validate:
+    dataset:
+      type: ICDAR2015Dataset
+      args:
+        data_path:
+          - /home/wjj/src/new_ccpd/CCPD2019/icdar_format/test.txt
+        pre_processes:
+          - type: CropWordBox
+            args:
+              value: [1,1.1]
+        img_mode: RGB
+    loader:
+      batch_size: 32
+      shuffle: true
+      pin_memory: false
+      num_workers: 8
+      collate_fn:
+        type: AlignCollate
+        args:
+          imgH: 32
+          imgW: 120
+          keep_ratio_with_pad: false
+

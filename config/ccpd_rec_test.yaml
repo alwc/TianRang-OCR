@@ -1,0 +1,45 @@
+name: DBNet
+dataset:
+  train:
+    dataset:
+      type: ICDAR2015Dataset # 数据集类型
+      args:
+        data_path: # 一个存放 img_path \t gt_path的文件
+          - ''
+        pre_processes: # 数据的预处理过程，包含augment和标签制作
+          - type: CropWordBox
+            args:
+              value: [1,1.4]
+          - type: IaaAugment # 使用imgaug进行变换
+            args:
+              - {'type':Resize, 'args':{'size': {'height': 32, 'width': 'keep-aspect-ratio'}}}
+              - {'type':AddToHueAndSaturation,'args':{'value':[-75, 75]}}
+              - {'type': Affine, 'args':{'rotate':[-10,10]}}
+        img_mode: RGB
+        filter_keys: [img_path,img_name,ignore_tags,shape] # 返回数据之前，从数据字典里删除的key
+        ignore_tags: ['*', '###']
+    loader:
+      batch_size: 1
+      shuffle: true
+      pin_memory: false
+      num_workers: 0
+      collate_fn: AlignCollate
+  validate:
+    dataset:
+      type: ICDAR2015Dataset
+      args:
+        data_path:
+          - ''
+        pre_processes:
+          - type: CropWordBox
+            args:
+              value: [1,1.4]
+        img_mode: RGB
+        filter_keys: []
+        ignore_tags: ['*', '###']
+    loader:
+      batch_size: 32
+      shuffle: true
+      pin_memory: false
+      num_workers: 8
+      collate_fn: AlignCollate
