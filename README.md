@@ -72,4 +72,5 @@ TianRang-OCR致力于打造一个实用的OCR工具库，集成常见的OCR算�
 - [ ] API文档
 - [ ] Dockerfile
 - [ ] requirements.txt
+- [ ] 文档！文档！文档！！！！
 
