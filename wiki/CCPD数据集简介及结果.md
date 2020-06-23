@@ -2,7 +2,7 @@
 
 ## 数据集简介
 
-[数据集详情、train、val、test划分](CCPD数据集简介及结果.md)
+[数据集详情、train、val、test划分](Convert CCPD format.md)
 
 
 
