@@ -4,10 +4,6 @@ TianRang-OCR致力于打造一个实用的OCR工具库，集成常见的OCR算�
 
 ![image-20200623171609880](wiki/结构.png)
 
-## Result
-
-- [CCPD数据集简介及车牌识别结果](wiki/CCPD数据集简介及结果.md)
-
 
 
 ## 开始训练
@@ -22,9 +18,20 @@ TianRang-OCR致力于打造一个实用的OCR工具库，集成常见的OCR算�
 
 ## 车牌识别服务
 
+使用此仓库在在CCPD上进行训练，得到车牌检测模型和车牌识别模型，由于CCPD上只有蓝牌，并且皖牌占大多数，所以目前模型存在以下问题：
+
+- 仅支持蓝牌，其他车牌如：黄牌、新能源车牌、白牌效果较差
+- 不支持双行车牌
+- 对部分省份的车牌效果较差
+
 ### Flask部署
 
 [Flask部署](wiki/车牌识别服务部署文档.md)
+
+- 建议使用CPU进行部署，在E5-2630v3@2.40GHz大概5FPS。
+- 输入图片仅为为车辆区域时，设置short_size为416
+- 输入图片为完整的图片时，设置short_size为736或者1024，耗时会显著提升
+- 若输入图片小于416是，设置short_size为300
 
 ### 部署接口文档
 
@@ -36,9 +43,23 @@ TianRang-OCR致力于打造一个实用的OCR工具库，集成常见的OCR算�
 
 `python app_demo.py --port 8484 --rec_model_path weights/rec_res18.pth`
 
+## Result
+
+[CCPD数据集简介及车牌识别结果](wiki/CCPD数据集简介及结果.md)
+
+### 示例
+
+![image-20200623172832218](wiki/lpr1.png)
+
+
+
+![image-20200623173038064](wiki/lpr2.png)
+
+![image-20200623173236315](wiki/lpr3.png)
+
 ## 近期更新
 
-- 2020.6.23初次提交
+- 2020.6.23初次提交：支持DBNet作为检测模型；多种backbone的CTCHead的识别模型。
 
 - [more](wiki/更新.md)
 
